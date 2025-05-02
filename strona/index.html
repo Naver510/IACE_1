@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sensor App</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container" id="main-view">
+    <div class="header">
+        <div class="icons">
+            <img src="images/csv-icon.png" alt="CSV"/>
+        </div>
+      <img src="images/logo.png" class="logo" alt="Logo"/>
+        <div class="icons">
+            <img src="images/txt-icon.png" alt="TXT"/>
+        </div>
+    </div>
+
+    <div class="sensors-grid">
+      <div class="sensor" onclick="showDetail(1)">Sensor 1</div>
+      <div class="sensor" onclick="showDetail(2)">Sensor 2</div>
+      <div class="sensor" onclick="showDetail(3)">Sensor 3</div>
+      <div class="sensor" onclick="showDetail(4)">Sensor 4</div>
+    </div>
+  </div>
+
+  <div class="container" id="detail-view" style="display:none;">
+    <div class="header">
+        <div class="icons">
+            <img src="images/csv-icon.png" alt="CSV"/>
+        </div>
+      <img src="images/logo.png" class="logo" alt="Logo"/>
+        <div class="icons">
+            <img src="images/txt-icon.png" alt="TXT"/>
+        </div>
+    </div>
+
+    <div class="chart-box">
+      <div class="refresh">🔄</div>
+      <div class="chart-label">WYKRES Z DANYCH Z BAZY</div>
+    </div>
+
+    <div class="buttons">
+      <button>WCZORAJ</button>
+      <button>OSTATNIE 7 DNI</button>
+      <button>OSTATNIE 30 DNI</button>
+      <button>USTAW ZAKRES</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
