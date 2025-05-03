@@ -45,4 +45,4 @@ if __name__ == "__main__":
         for sensor, value in sensor_data.items():
             send_data_to_api(SENSOR_API_KEY, {"sensor": sensor, "value": value})
 
-        time.sleep(1)  # every second
+        time.sleep(1)  # every secondd
