@@ -4,8 +4,12 @@ import requests
 import os
 import base64
 
-API_URL = "http://example.com/sensor/{sensorAPIkey}/reading" 
-SENSOR_API_KEY = "your_sensor_api_key" 
+API_URL = "http://127.0.0.1:3000/sensor/{sensorAPIkey}/reading" 
+SENSOR_API_KEY1 = "KSLZPPARMMGS"
+SENSOR_API_KEY2 = "JGOIWAJOZOIR"
+SENSOR_API_KEY3 = "GJOIJZOKPOKW"
+SENSOR_API_KEY4 = "OIJOJOJGWAZC"
+
 
 def generate_sensor_data():
     data = {
@@ -51,10 +55,14 @@ if __name__ == "__main__":
 
     while True:
         sensor_data = generate_sensor_data()
-        print(sensor_data)
+        print()
 
-        # send each sensor data to the API
-        for sensor, value in sensor_data.items():
-            send_data_to_api(SENSOR_API_KEY, {"sensor": sensor, "value": value})
-
+        send_data_to_api(SENSOR_API_KEY1,sensor_data.get('temperatura'))
+        time.sleep(0.25)
+        send_data_to_api(SENSOR_API_KEY2,sensor_data.get('predkosc_obrotowa'))
+        time.sleep(0.25)
+        send_data_to_api(SENSOR_API_KEY3,sensor_data.get('cisnienie'))
+        time.sleep(0.25)
+        send_data_to_api(SENSOR_API_KEY4,sensor_data.get('wilgotnosc'))
+        time.sleep(0.25)
         time.sleep(1)  # every second
