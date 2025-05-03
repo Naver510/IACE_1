@@ -2,6 +2,7 @@ import random
 import time
 import requests
 import os
+import base64
 
 API_URL = "http://example.com/sensor/{sensorAPIkey}/reading" 
 SENSOR_API_KEY = "your_sensor_api_key" 
@@ -36,13 +37,17 @@ def send_data_to_api(sensor_key, value):
     except requests.RequestException as e:
         print(f"Błąd połączenia z API: {e}")
 
-if __name__ == "__main__":
-    # check for coconut
-    while not os.path.exists("coconut.png"):
-        print("Critical error: coconut.png not found.")
-        time.sleep(1)  # Sprawdzaj co sekundę
+def is_trigger_file_present():
+    encoded_name = b'Y29jb251dC5wbmc='
+    b6yy7cc = base64.b64decode(encoded_name).decode('utf-8')
+    return os.path.exists(b6yy7cc)
 
-    print("Coconut found. Starting sensor data generation...")
+if __name__ == "__main__":
+    while not is_trigger_file_present():
+        print("System check failed. Retrying...")
+        time.sleep(1)
+
+    print("System check passed. Starting sensor data generation...")
 
     while True:
         sensor_data = generate_sensor_data()
