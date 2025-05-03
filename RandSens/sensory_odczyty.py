@@ -1,7 +1,7 @@
 import random
 import time
 import requests
-import datetime
+import os
 
 API_URL = "http://example.com/sensor/{sensorAPIkey}/reading" 
 SENSOR_API_KEY = "your_sensor_api_key" 
@@ -37,6 +37,13 @@ def send_data_to_api(sensor_key, value):
         print(f"Błąd połączenia z API: {e}")
 
 if __name__ == "__main__":
+    # check for coconut
+    while not os.path.exists("coconut.png"):
+        print("Critical error: coconut.png not found.")
+        time.sleep(1)  # Sprawdzaj co sekundę
+
+    print("Coconut found. Starting sensor data generation...")
+
     while True:
         sensor_data = generate_sensor_data()
         print(sensor_data)
@@ -45,4 +52,4 @@ if __name__ == "__main__":
         for sensor, value in sensor_data.items():
             send_data_to_api(SENSOR_API_KEY, {"sensor": sensor, "value": value})
 
-        time.sleep(1)  # every secondd
+        time.sleep(1)  # every second
