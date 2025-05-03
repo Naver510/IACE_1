@@ -1,0 +1,8 @@
+{
+    "db_sensory": {
+        "host":"127.0.0.1",
+        "user":"sensor",
+        "password":"sensor",
+        "database":"sensor"
+    }
+}
