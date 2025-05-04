@@ -1,18 +1,34 @@
 // server.mjs
+const cors = require('cors');
 const { createServer, get } = require('node:http')
 const { createConnection } = require('mysql');
 const express = require('express')
 const config = require('./config.json');
 const app = express()
+app.use(cors());
 
 app.use(express.json())
 
 
-app.get('/sensor/:sensorID/data',(req,res)=>{
-  res.setHeader('Content-Type','application/json')
-  // TODO: Faktyczne zapytanie do bazy
-  res.end(JSON.stringify({values:[{1746296389:30.1},{1746296390:30.5},{1746296391:31.1},{1746296392:32.0},{1746296393:32.2},{1746296394:32.5},{1746296395:32.9},{1746296396:33.2},{1746296397:31.9},{174629638:31.5},{1746296399:30.1}]}))
-})
+app.get('/sensor/:sensorID/data', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  
+  const data = [
+    { timestamp: 1746296389, value: 30.1 },
+    { timestamp: 1746296390, value: 30.5 },
+    { timestamp: 1746296391, value: 31.1 },
+    { timestamp: 1746296392, value: 32.0 },
+    { timestamp: 1746296393, value: 32.2 },
+    { timestamp: 1746296394, value: 32.5 },
+    { timestamp: 1746296395, value: 32.9 },
+    { timestamp: 1746296396, value: 33.2 },
+    { timestamp: 1746296397, value: 31.9 },
+    { timestamp: 1746296398, value: 31.5 },
+    { timestamp: 1746296399, value: 30.1 }
+  ];
+  res.end(JSON.stringify(data));
+});
+
 app.post('/sensor/:sensorAPIkey/reading',(req,res)=>{
   res.setHeader('Content-Type','application/json')
   const connection = createConnection(config.db_sensory)
