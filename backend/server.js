@@ -34,6 +34,32 @@ app.get('/sensor/:sensorID/data', (req, res) => {
   })
 });
 
+app.get('/sensor/:sensorID/safezone', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  const connection = createConnection(config.db_sensory)
+  connection.connect((err) => {
+    if (err) {
+      console.error('Error connecting to the database:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+  });
+  connection.query('SELECT SafeMin, SafeMax FROM saferange WHERE SensorKeys_idSensorKeys = ?;', [req.params.sensorID], (err, results) => {
+    if (err) {
+      console.error('Error fetching data from the database:', err);
+      res.status(500).json({ error: 'Database query error' });
+      return;
+    }
+    let data = results.map((row)=>({
+      min: parseFloat(row.SafeMin),
+      max: parseFloat(row.SafeMax)
+    }))
+    console.log(data[0])
+    res.status(200).json(data[0])
+  })
+
+});
+
 app.post('/sensor/:sensorAPIkey/reading', (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const connection = createConnection(config.db_sensory)
