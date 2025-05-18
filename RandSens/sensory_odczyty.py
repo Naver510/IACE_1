@@ -10,7 +10,6 @@ SENSOR_API_KEY2 = "JGOIWAJOZOIR"
 SENSOR_API_KEY3 = "GJOIJZOKPOKW"
 SENSOR_API_KEY4 = "OIJOJOJGWAZC"
 
-
 def generate_sensor_data():
     data = {
         "temperatura": round(random.uniform(18.0, 25.0), 2),        # °C
@@ -41,28 +40,19 @@ def send_data_to_api(sensor_key, value):
     except requests.RequestException as e:
         print(f"Błąd połączenia z API: {e}")
 
-def is_trigger_file_present():
-    encoded_name = b'Y29jb251dC5wbmc='
-    b6yy7cc = base64.b64decode(encoded_name).decode('utf-8')
-    return os.path.exists(b6yy7cc)
-
 if __name__ == "__main__":
-    while not is_trigger_file_present():
-        print("System check failed. Retrying...")
-        time.sleep(1)
-
-    print("System check passed. Starting sensor data generation...")
+    print("Starting sensor data generation...")
 
     while True:
         sensor_data = generate_sensor_data()
         print()
 
-        send_data_to_api(SENSOR_API_KEY1,sensor_data.get('temperatura'))
+        send_data_to_api(SENSOR_API_KEY1, sensor_data.get('temperatura'))
         time.sleep(0.25)
-        send_data_to_api(SENSOR_API_KEY2,sensor_data.get('predkosc_obrotowa'))
+        send_data_to_api(SENSOR_API_KEY2, sensor_data.get('predkosc_obrotowa'))
         time.sleep(0.25)
-        send_data_to_api(SENSOR_API_KEY3,sensor_data.get('cisnienie'))
+        send_data_to_api(SENSOR_API_KEY3, sensor_data.get('cisnienie'))
         time.sleep(0.25)
-        send_data_to_api(SENSOR_API_KEY4,sensor_data.get('wilgotnosc'))
+        send_data_to_api(SENSOR_API_KEY4, sensor_data.get('wilgotnosc'))
         time.sleep(0.25)
         time.sleep(1)  # every second
