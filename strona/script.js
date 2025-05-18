@@ -1,29 +1,33 @@
 let chart;
 let selectedSensorId = null;
+let refreshInterval = null;
 
 function showDetail(sensorId) {
   selectedSensorId = sensorId;
   document.getElementById("main-view").style.display = "none";
   document.getElementById("detail-view").style.display = "block";
   fetchSensorData(sensorId);
+
+  // Clear any existing interval and set a new one for refreshing the chart
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(() => fetchSensorData(sensorId), 2000);
 }
 
 function fetchSensorData(sensorId) {
-    console.log("Pobieram dane dla sensora:", sensorId); // DEBUG
-  
-    fetch(`http://127.0.0.1:3000/sensor/${sensorId}/data`)
-      .then(response => response.json())
-      .then(data => {
-        console.log("Odebrane dane:", data); // DEBUG
-        renderChart(data);
-      })
-      .catch(error => {
-        console.error("Błąd pobierania danych:", error);
-      });
-  }
-  
+  console.log("Pobieram dane dla sensora:", sensorId); // DEBUG
 
-function renderChart(data) {
+  fetch(`http://127.0.0.1:3000/sensor/${sensorId}/data`)
+    .then(response => response.json())
+    .then(data => {
+      console.log("Odebrane dane:", data); // DEBUG
+      renderChart(data, false); // Disable animation for updates
+    })
+    .catch(error => {
+      console.error("Błąd pobierania danych:", error);
+    });
+}
+
+function renderChart(data, animate = true) {
   const ctx = document.getElementById("sensorChart").getContext("2d");
 
   const labels = data.map(entry =>
@@ -49,6 +53,7 @@ function renderChart(data) {
     },
     options: {
       responsive: true,
+      animation: animate, // Enable or disable animation
       scales: {
         x: { ticks: { color: "#fff" } },
         y: { ticks: { color: "#fff" }, beginAtZero: true }
