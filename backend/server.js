@@ -17,6 +17,7 @@ app.get('/sensor/:sensorID/data', (req, res) => {
     if (err) {
       console.error('Error connecting to the database:', err);
       res.status(500).json({ error: 'Internal Server Error' });
+      connection.end()
       return;
     }
   });
@@ -24,6 +25,7 @@ app.get('/sensor/:sensorID/data', (req, res) => {
     if (err) {
       console.error('Error fetching data from the database:', err);
       res.status(500).json({ error: 'Database query error' });
+      connection.end()
       return;
     }
     let data = results.map((row) => ({
@@ -32,6 +34,7 @@ app.get('/sensor/:sensorID/data', (req, res) => {
     }));
     res.status(200).json(data);
   })
+  connection.end()
 });
 
 app.get('/sensor/:sensorID/safezone', (req, res) => {
@@ -41,6 +44,7 @@ app.get('/sensor/:sensorID/safezone', (req, res) => {
     if (err) {
       console.error('Error connecting to the database:', err);
       res.status(500).json({ error: 'Internal Server Error' });
+      connection.end()
       return;
     }
   });
@@ -48,16 +52,17 @@ app.get('/sensor/:sensorID/safezone', (req, res) => {
     if (err) {
       console.error('Error fetching data from the database:', err);
       res.status(500).json({ error: 'Database query error' });
+      connection.end()
       return;
     }
-    let data = results.map((row)=>({
+    let data = results.map((row) => ({
       min: parseFloat(row.SafeMin),
       max: parseFloat(row.SafeMax)
     }))
     console.log(data[0])
     res.status(200).json(data[0])
+    connection.end()
   })
-
 });
 
 app.post('/sensor/:sensorAPIkey/reading', (req, res) => {
@@ -67,6 +72,7 @@ app.post('/sensor/:sensorAPIkey/reading', (req, res) => {
     if (err) {
       console.error('Error connecting to the database:', err);
       res.status(500).json({ error: 'Database connection error' });
+      connection.end()
       return;
     }
   });
@@ -74,6 +80,7 @@ app.post('/sensor/:sensorAPIkey/reading', (req, res) => {
     if (err) {
       console.error('Error inserting data into the database:', err);
       res.status(500).json({ error: 'Database insertion error' });
+      connection.end()
       return;
     }
     res.status(200).json({ message: 'Data inserted successfully' });
