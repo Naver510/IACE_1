@@ -10,31 +10,42 @@
 <body>
   <div class="container" id="main-view">
     <div class="header">
-        <div class="icons">
-            <img src="images/csv-icon.png" alt="CSV"/>
-        </div>
       <img src="images/logo.png" class="logo" alt="Logo"/>
-        <div class="icons">
-            <img src="images/txt-icon.png" alt="TXT"/>
-        </div>
     </div>
 
     <div class="sensors-grid">
-      <div class="sensor" onclick="showDetail(1)">Sensor 1</div>
-      <div class="sensor" onclick="showDetail(2)">Sensor 2</div>
-      <div class="sensor" onclick="showDetail(3)">Sensor 3</div>
-      <div class="sensor" onclick="showDetail(4)">Sensor 4</div>
+      <div class="sensor" onclick="showDetail(1)">
+        <div class="sensor-name">Temperatura</div>
+        <div class="sensor-value" id="sensor-value-1">--</div>
+        <div class="sensor-unit">°C</div>
+      </div>
+      <div class="sensor" onclick="showDetail(2)">
+        <div class="sensor-name">Prędkość obrotowa</div>
+        <div class="sensor-value" id="sensor-value-2">--</div>
+        <div class="sensor-unit">RPM</div>
+      </div>
+      <div class="sensor" onclick="showDetail(3)">
+        <div class="sensor-name">Ciśnienie</div>
+        <div class="sensor-value" id="sensor-value-3">--</div>
+        <div class="sensor-unit">hPa</div>
+      </div>
+      <div class="sensor" onclick="showDetail(4)">
+        <div class="sensor-name">Wilgotność</div>
+        <div class="sensor-value" id="sensor-value-4">--</div>
+        <div class="sensor-unit">%</div>
+      </div>
     </div>
   </div>
 
   <div class="container" id="detail-view" style="display:none;">
     <div class="header">
+        <button class="back-button" onclick="showMainView()">↩ Powrót</button>
         <div class="icons">
-            <img src="images/csv-icon.png" alt="CSV"/>
+            <img src="images/csv-icon.png" alt="CSV" onclick="downloadData('csv')" class="download-icon" title="Pobierz jako CSV"/>
         </div>
       <img src="images/logo.png" class="logo" alt="Logo"/>
         <div class="icons">
-            <img src="images/txt-icon.png" alt="TXT"/>
+            <img src="images/txt-icon.png" alt="TXT" onclick="downloadData('txt')" class="download-icon" title="Pobierz jako TXT"/>
         </div>
     </div>
 

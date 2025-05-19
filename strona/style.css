@@ -15,6 +15,23 @@ body {
     justify-content: center;
     align-items: center;
     gap: 50px;
+    position: relative;
+    margin-bottom: 30px;
+    
+  }
+  
+  #main-view .header {
+    justify-content: center;
+    gap: 0;
+    padding-left: 60px;
+  }
+  
+  #main-view .logo {
+    margin: 0 auto;
+  }
+  
+  #detail-view .logo {
+    margin-left: 60px;
   }
   
   .logo {
@@ -43,9 +60,43 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     height: 230px;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     text-align: center;
+    transition: transform 0.2s;
+}
+
+.sensor:hover {
+    transform: scale(1.02);
+}
+
+.sensor-name {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.sensor-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 5px;
+}
+
+.sensor-unit {
+    font-size: 18px;
+    color: rgba(255,255,255,0.7);
+}
+
+.sensor-value.over-threshold {
+    color: #ff4444;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
   
   .chart-box {
@@ -89,4 +140,27 @@ body {
     font-size: 20px;
     cursor: pointer;
   }
+  
+  .back-button {
+    position: absolute;
+    left: 0;
+    padding: 8px 15px;
+    background: #2b5885;
+    transition: background-color 0.3s;
+    margin: 0;
+    font-size: 16px;
+  }
+  
+  .back-button:hover {
+    background: #1f4060;
+  }
+  
+.download-icon {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.download-icon:hover {
+    transform: scale(1.1);
+}
   
