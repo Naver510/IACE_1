@@ -14,17 +14,17 @@ function showDetail(sensorId) {
   selectedSensorId = sensorId;
   document.getElementById("main-view").style.display = "none";
   document.getElementById("detail-view").style.display = "block";
-  
+
   if (chart) {
     chart.destroy();
     chart = null;
   }
-  
+
   fetchSensorData(sensorId);
 
-  if (mainViewRefreshInterval) clearInterval(mainViewRefreshInterval);
+  if (mainViewRefreshInterval) { mainViewRefreshInterval = clearInterval(mainViewRefreshInterval) };
 
-  if (refreshInterval) clearInterval(refreshInterval);
+  if (refreshInterval) { refreshInterval = clearInterval(refreshInterval); }
   refreshInterval = setInterval(() => fetchSensorData(sensorId), 2000);
 }
 
@@ -62,15 +62,14 @@ function showMainView() {
   document.getElementById("detail-view").style.display = "none";
   document.getElementById("main-view").style.display = "block";
   selectedSensorId = null;
-  
+
   if (chart) {
     chart.destroy();
     chart = null;
   }
 
   if (refreshInterval) {
-    clearInterval(refreshInterval);
-    refreshInterval = null;
+    refreshInterval = clearInterval(refreshInterval);
   }
 
   updateMainViewSensorValues();
@@ -115,13 +114,13 @@ function renderChart(data, animate = true) {
           duration: animate ? 750 : 0
         },
         scales: {
-          x: { 
+          x: {
             ticks: { color: "#fff" },
             grid: {
               color: "rgba(255,255,255,0.1)"
             }
           },
-          y: { 
+          y: {
             ticks: { color: "#fff" },
             grid: {
               color: "rgba(255,255,255,0.1)"
@@ -135,10 +134,10 @@ function renderChart(data, animate = true) {
           }
         },
         plugins: {
-          legend: { 
-            labels: { 
+          legend: {
+            labels: {
               color: "#fff"
-            } 
+            }
           }
         }
       }
@@ -169,7 +168,7 @@ function downloadData(format) {
     .then(data => {
       let content = '';
       const sensorInfo = SENSOR_LABELS[selectedSensorId];
-      
+
       if (format === 'csv') {
         content = `Timestamp,${sensorInfo.name} (${sensorInfo.unit})\n`;
 
@@ -183,7 +182,7 @@ function downloadData(format) {
         content += '='.repeat(40) + '\n';
         content += 'Data i czas          | Wartość\n';
         content += '-'.repeat(40) + '\n';
-        
+
         data.forEach(entry => {
           const date = new Date(entry.timestamp * 1000).toLocaleString();
           content += `${date.padEnd(20)}| ${entry.value}\n`;
@@ -193,7 +192,7 @@ function downloadData(format) {
 
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const fileName = `sensor_${selectedSensorId}_${format === 'csv' ? 'data.csv' : 'data.txt'}`;
-      
+
       if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveBlob(blob, fileName);
       } else {
