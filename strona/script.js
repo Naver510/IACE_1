@@ -28,13 +28,14 @@ function showDetail(sensorId) {
   refreshInterval = setInterval(() => fetchSensorData(sensorId), 2000);
 }
 
-function fetchSensorData(sensorId) {
-  console.log("Pobieram dane dla sensora:", sensorId);
-
-  fetch(`http://127.0.0.1:3000/sensor/${sensorId}/data`)
+function fetchSensorData(sensorId, from = null, to = null) {
+  let url = `http://127.0.0.1:3000/sensor/${sensorId}/data`;
+  if (from && to) {
+    url += `?from=${from}&to=${to}`;
+  }
+  fetch(url)
     .then(response => response.json())
     .then(data => {
-      console.log("Odebrane dane:", data);
       renderChart(data, true);
     })
     .catch(error => {
@@ -188,3 +189,36 @@ function downloadData(format) {
       alert('Wystąpił błąd podczas pobierania danych');
     });
 }
+
+document.querySelectorAll('.buttons button').forEach((btn, idx) => {
+  btn.onclick = () => {
+    if (!selectedSensorId) {
+      alert('Najpierw wybierz sensor!');
+      return;
+    }
+    const now = new Date();
+    let from, to;
+    to = Math.floor(now.getTime() / 1000);
+
+    if (idx === 0) { // WCZORAJ
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      yesterday.setHours(0,0,0,0);
+      from = Math.floor(yesterday.getTime() / 1000);
+      to = from + 86400 - 1;
+    } else if (idx === 1) { // OSTATNIE 7 DNI
+      from = to - 7 * 86400;
+    } else if (idx === 2) { // OSTATNIE 30 DNI
+      from = to - 30 * 86400;
+    } else if (idx === 3) { // USTAW ZAKRES
+      let dni = prompt("Podaj liczbę dni (1-30):", "7");
+      dni = parseInt(dni);
+      if (isNaN(dni) || dni < 1 || dni > 30) {
+        alert("Nieprawidłowa liczba dni!");
+        return;
+      }
+      from = to - dni * 86400;
+    }
+    fetchSensorData(selectedSensorId, from, to);
+  };
+});

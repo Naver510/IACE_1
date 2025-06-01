@@ -13,20 +13,28 @@ app.use(express.json())
 
 app.get('/sensor/:sensorID/data', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  const connection = createConnection(config.db_sensory)
+  const connection = createConnection(config.db_sensory);
+
+  let query = 'SELECT ReadingTime, Value FROM reading WHERE SensorKeys_idSensorKeys = ?';
+  const params = [req.params.sensorID];
+
+  if (req.query.from && req.query.to) {
+    query += ' AND ReadingTime BETWEEN ? AND ?';
+    params.push(Number(req.query.from), Number(req.query.to));
+  }
+
   connection.connect((err) => {
     if (err) {
-      console.error('Error connecting to the database:', err);
       res.status(500).json({ error: 'Internal Server Error' });
-      connection.end()
+      connection.end();
       return;
     }
   });
-  connection.query('SELECT ReadingTime, Value FROM reading where SensorKeys_idSensorKeys = ?;', [req.params.sensorID], (err, results) => {
+
+  connection.query(query, params, (err, results) => {
     if (err) {
-      console.error('Error fetching data from the database:', err);
       res.status(500).json({ error: 'Database query error' });
-      connection.end()
+      connection.end();
       return;
     }
     let data = results.map((row) => ({
@@ -34,8 +42,8 @@ app.get('/sensor/:sensorID/data', (req, res) => {
       value: parseFloat(row.Value)
     }));
     res.status(200).json(data);
-  })
-  connection.end()
+    connection.end();
+  });
 });
 
 app.get('/sensor/:sensorID/safezone', (req, res) => {
