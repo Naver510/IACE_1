@@ -231,9 +231,15 @@ document.querySelectorAll('.buttons button').forEach((btn, idx) => {
       from = Math.floor(yesterday.getTime() / 1000);
       to = from + 86400 - 1;
     } else if (idx === 1) { // OSTATNIE 7 DNI
-      from = to - 7 * 86400;
+      const start = new Date(now);
+      start.setDate(now.getDate() - 7);
+      start.setHours(0,0,0,0);
+      from = Math.floor(start.getTime() / 1000);
     } else if (idx === 2) { // OSTATNIE 30 DNI
-      from = to - 30 * 86400;
+      const start = new Date(now);
+      start.setDate(now.getDate() - 30);
+      start.setHours(0,0,0,0);
+      from = Math.floor(start.getTime() / 1000);
     } else if (idx === 3) { // USTAW ZAKRES
       let dni = prompt("Podaj liczbę dni (1-30):", "7");
       dni = parseInt(dni);
@@ -241,7 +247,10 @@ document.querySelectorAll('.buttons button').forEach((btn, idx) => {
         alert("Nieprawidłowa liczba dni!");
         return;
       }
-      from = to - dni * 86400;
+      const start = new Date(now);
+      start.setDate(now.getDate() - dni);
+      start.setHours(0,0,0,0);
+      from = Math.floor(start.getTime() / 1000);
     }
     fetchSensorData(selectedSensorId, from, to);
   };
