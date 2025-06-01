@@ -65,6 +65,12 @@ body {
     justify-content: center;
     text-align: center;
     transition: transform 0.2s;
+    transition: background-color 0.25s;
+
+}
+.sensor.warning{
+  background: #bf823d;
+  transition: background-color 0.25s;
 }
 
 .sensor:hover {
