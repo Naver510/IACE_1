@@ -10,6 +10,8 @@ const SENSOR_LABELS = {
   4: { name: 'Wilgotność', unit: '%' }
 };
 
+const safezones = new Array(4)
+
 function showDetail(sensorId) {
   selectedSensorId = sensorId;
   document.getElementById("main-view").style.display = "none";
@@ -42,6 +44,18 @@ function fetchSensorData(sensorId, from = null, to = null) {
       console.error("Błąd pobierania danych:", error);
     });
 }
+function fetchSensorsSafeZone() {
+  for (let i = 1; i <= 4; i++) {
+    fetch(`http://127.0.0.1:3000/sensor/${i}/safezone`)
+      .then(response => response.json())
+      .then(data => {
+        safezones[i-1] = data
+      })
+      .catch(error => {
+        console.error(`Błąd pobierania danych dla sensora ${i}:`, error);
+      });
+  }
+}
 
 function updateMainViewSensorValues() {
   for (let i = 1; i <= 4; i++) {
@@ -50,6 +64,15 @@ function updateMainViewSensorValues() {
       .then(data => {
         const latestValue = data.length > 0 ? data[data.length - 1].value : '--';
         const valueElement = document.getElementById(`sensor-value-${i}`);
+        if (latestValue > safezones[i-1]['max']) {
+          valueElement?.parentElement?.setAttribute('class','sensor warning')
+        }
+        else if (latestValue < safezones[i-1]['min']) {
+          valueElement?.parentElement?.setAttribute('class','sensor warning') 
+        }
+        else{
+          valueElement?.parentElement?.setAttribute('class','sensor') 
+        }
         valueElement.textContent = latestValue;
       })
       .catch(error => {
@@ -80,6 +103,7 @@ function showMainView() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  fetchSensorsSafeZone()
   updateMainViewSensorValues();
   mainViewRefreshInterval = setInterval(updateMainViewSensorValues, 2000);
 });
