@@ -163,36 +163,15 @@ function downloadData(format) {
     return;
   }
 
-  fetch(`http://127.0.0.1:3000/sensor/${selectedSensorId}/data`)
-    .then(response => response.json())
-    .then(data => {
-      let content = '';
-      const sensorInfo = SENSOR_LABELS[selectedSensorId];
+  const url = `http://127.0.0.1:3000/sensor/${selectedSensorId}/export?format=${format}`;
+  const fileName = `sensor_${selectedSensorId}_data.${format}`;
 
-      if (format === 'csv') {
-        content = `Timestamp,${sensorInfo.name} (${sensorInfo.unit})\n`;
-
-        data.forEach(entry => {
-          const date = new Date(entry.timestamp * 1000).toLocaleString();
-          content += `${date},${entry.value}\n`;
-        });
-      } else {
-        content = `Dane sensora: ${sensorInfo.name}\n`;
-        content += `Jednostka: ${sensorInfo.unit}\n`;
-        content += '='.repeat(40) + '\n';
-        content += 'Data i czas          | Wartość\n';
-        content += '-'.repeat(40) + '\n';
-
-        data.forEach(entry => {
-          const date = new Date(entry.timestamp * 1000).toLocaleString();
-          content += `${date.padEnd(20)}| ${entry.value}\n`;
-        });
-      }
-
-
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-      const fileName = `sensor_${selectedSensorId}_${format === 'csv' ? 'data.csv' : 'data.txt'}`;
-
+  fetch(url)
+    .then(response => {
+      if (!response.ok) throw new Error('Błąd pobierania pliku');
+      return response.blob();
+    })
+    .then(blob => {
       if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveBlob(blob, fileName);
       } else {
