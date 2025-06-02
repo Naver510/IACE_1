@@ -12,29 +12,14 @@ const SENSOR_LABELS = {
 
 const safezones = new Array(4)
 
-function showDetail(sensorId) {
-  selectedSensorId = sensorId;
-  document.getElementById("main-view").style.display = "none";
-  document.getElementById("detail-view").style.display = "block";
-
-  if (chart) {
-    chart.destroy();
-    chart = null;
-  }
-
-  fetchSensorData(sensorId);
-
-  if (mainViewRefreshInterval) { mainViewRefreshInterval = clearInterval(mainViewRefreshInterval) };
-
-  if (refreshInterval) { refreshInterval = clearInterval(refreshInterval); }
-  refreshInterval = setInterval(() => fetchSensorData(sensorId), 2000);
-}
-
 function fetchSensorData(sensorId, from = null, to = null) {
   let url = `http://127.0.0.1:3000/sensor/${sensorId}/data`;
   if (from && to) {
     url += `?from=${from}&to=${to}`;
   }
+  // Dodaj zapamiętanie ostatniego zakresu czasowego
+  window.lastFetchFrom = from;
+  window.lastFetchTo = to;
   fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -44,6 +29,7 @@ function fetchSensorData(sensorId, from = null, to = null) {
       console.error("Błąd pobierania danych:", error);
     });
 }
+
 function fetchSensorsSafeZone() {
   for (let i = 1; i <= 4; i++) {
     fetch(`http://127.0.0.1:3000/sensor/${i}/safezone`)
@@ -82,6 +68,36 @@ function updateMainViewSensorValues() {
   }
 }
 
+function showDetail(sensorId) {
+  selectedSensorId = sensorId;
+  document.getElementById("main-view").style.display = "none";
+  document.getElementById("detail-view").style.display = "block";
+
+  if (chart) {
+    chart.destroy();
+    chart = null;
+  }
+
+  // Przy wejściu w szczegóły sensora, nie odświeżaj automatycznie wykresu jeśli był wybrany zakres
+  if (window.lastRangeMode && window.lastFetchFrom && window.lastFetchTo) {
+    fetchSensorData(sensorId, window.lastFetchFrom, window.lastFetchTo);
+  } else {
+    fetchSensorData(sensorId);
+  }
+
+  if (mainViewRefreshInterval) { mainViewRefreshInterval = clearInterval(mainViewRefreshInterval) };
+
+  if (refreshInterval) { refreshInterval = clearInterval(refreshInterval); }
+  refreshInterval = setInterval(() => {
+    // Odświeżaj tylko dla bieżącego zakresu, jeśli jest ustawiony
+    if (window.lastRangeMode && window.lastFetchFrom && window.lastFetchTo) {
+      fetchSensorData(sensorId, window.lastFetchFrom, window.lastFetchTo);
+    } else {
+      fetchSensorData(sensorId);
+    }
+  }, 2000);
+}
+
 function showMainView() {
   document.getElementById("detail-view").style.display = "none";
   document.getElementById("main-view").style.display = "block";
@@ -106,17 +122,93 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchSensorsSafeZone()
   updateMainViewSensorValues();
   mainViewRefreshInterval = setInterval(updateMainViewSensorValues, 2000);
+
+  // Dodaj obsługę kliknięcia na ikonę odświeżania
+  const refreshBtn = document.querySelector('.chart-box .refresh');
+  if (refreshBtn) {
+    refreshBtn.onclick = refreshChart;
+  }
 });
 
 function renderChart(data, animate = true) {
   const ctx = document.getElementById("sensorChart").getContext("2d");
-  const MAX_DATA_POINTS = 40;
+  let labels, values;
 
-  const recentData = data.slice(-MAX_DATA_POINTS);
-  const labels = recentData.map(entry =>
-    new Date(entry.timestamp * 1000).toLocaleTimeString()
-  );
-  const values = recentData.map(entry => entry.value);
+  if (window.lastRangeMode === 'yesterday') {
+    // Wyciągnij po jednym wyniku na każdą godzinę (najbliższy do pełnej godziny)
+    const byHour = new Array(24).fill(null);
+    data.forEach(entry => {
+      const d = new Date(entry.timestamp * 1000);
+      const hour = d.getHours();
+      if (!byHour[hour]) {
+        byHour[hour] = entry;
+      }
+    });
+    const filtered = byHour.filter(Boolean);
+    labels = filtered.map(entry =>
+      new Date(entry.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
+    values = filtered.map(entry => entry.value);
+  } else if (window.lastRangeMode === 'last7days') {
+    // Wyciągnij po 4 wyniki na każdy dzień z ostatnich 7 dni
+    const byDay = {};
+    data.forEach(entry => {
+      const d = new Date(entry.timestamp * 1000);
+      const dayKey = d.getFullYear() + '-' + (d.getMonth()+1).toString().padStart(2,'0') + '-' + d.getDate().toString().padStart(2,'0');
+      if (!byDay[dayKey]) byDay[dayKey] = [];
+      if (byDay[dayKey].length < 4) byDay[dayKey].push(entry);
+    });
+    const filtered = [];
+    Object.keys(byDay).sort().forEach(day => {
+      filtered.push(...byDay[day]);
+    });
+    labels = filtered.map(entry =>
+      new Date(entry.timestamp * 1000).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    );
+    values = filtered.map(entry => entry.value);
+  } else if (window.lastRangeMode === 'range') {
+    // Pokaz po 4 wyniki na każdy dzień z wybranego zakresu
+    const byDay = {};
+    data.forEach(entry => {
+      const d = new Date(entry.timestamp * 1000);
+      const dayKey = d.getFullYear() + '-' + (d.getMonth()+1).toString().padStart(2,'0') + '-' + d.getDate().toString().padStart(2,'0');
+      if (!byDay[dayKey]) byDay[dayKey] = [];
+      if (byDay[dayKey].length < 4) byDay[dayKey].push(entry);
+    });
+    const filtered = [];
+    Object.keys(byDay).sort().forEach(day => {
+      filtered.push(...byDay[day]);
+    });
+    labels = filtered.map(entry =>
+      new Date(entry.timestamp * 1000).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    );
+    values = filtered.map(entry => entry.value);
+  } else if (data.length > 0 && data.length <= 40) {
+    labels = data.map(entry =>
+      new Date(entry.timestamp * 1000).toLocaleTimeString()
+    );
+    values = data.map(entry => entry.value);
+  } else if (data.length > 40 && window.lastRangeMode === 'range') {
+    // tryb zakresu: pokaz co 100-ty odczyt
+    const sampled = [];
+    for (let i = 0; i < data.length; i += 100) {
+      sampled.push(data[i]);
+    }
+    if (data.length % 100 !== 0 && data.length > 0 && sampled[sampled.length - 1] !== data[data.length - 1]) {
+      sampled.push(data[data.length - 1]);
+    }
+    labels = sampled.map(entry =>
+      new Date(entry.timestamp * 1000).toLocaleString()
+    );
+    values = sampled.map(entry => entry.value);
+  } else {
+    // domyślnie pokazuj tylko ostatnie 40
+    const recentData = data.slice(-40);
+    labels = recentData.map(entry =>
+      new Date(entry.timestamp * 1000).toLocaleTimeString()
+    );
+    values = recentData.map(entry => entry.value);
+  }
 
   if (!chart) {
     chart = new Chart(ctx, {
@@ -178,7 +270,12 @@ function renderChart(data, animate = true) {
 
 function refreshChart() {
   if (selectedSensorId !== null) {
-    fetchSensorData(selectedSensorId);
+    // Przy odświeżaniu wykresu, odśwież ostatni wybrany zakres (jeśli był)
+    if (window.lastRangeMode && window.lastFetchFrom && window.lastFetchTo) {
+      fetchSensorData(selectedSensorId, window.lastFetchFrom, window.lastFetchTo);
+    } else {
+      fetchSensorData(selectedSensorId);
+    }
   }
 }
 
@@ -222,24 +319,37 @@ document.querySelectorAll('.buttons button').forEach((btn, idx) => {
     }
     const now = new Date();
     let from, to;
-    to = Math.floor(now.getTime() / 1000);
 
     if (idx === 0) { // WCZORAJ
+      // WCZORAJ (tylko 24 wyniki z godzin 0-23 z wczoraj)
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
       yesterday.setHours(0,0,0,0);
       from = Math.floor(yesterday.getTime() / 1000);
-      to = from + 86400 - 1;
+      to = Math.floor(yesterday.getTime() / 1000) + 86399;
+      window.lastRangeMode = 'yesterday';
+      fetchSensorData(selectedSensorId, from, to);
+      return;
     } else if (idx === 1) { // OSTATNIE 7 DNI
-      const start = new Date(now);
-      start.setDate(now.getDate() - 7);
-      start.setHours(0,0,0,0);
-      from = Math.floor(start.getTime() / 1000);
+      // OSTATNIE 7 DNI (ostatnie 7 dni do teraz, po 4 wyniki na dzień)
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 6);
+      sevenDaysAgo.setHours(0,0,0,0);
+      from = Math.floor(sevenDaysAgo.getTime() / 1000);
+      to = Math.floor(now.getTime() / 1000);
+      window.lastRangeMode = 'last7days';
+      fetchSensorData(selectedSensorId, from, to);
+      return;
     } else if (idx === 2) { // OSTATNIE 30 DNI
-      const start = new Date(now);
-      start.setDate(now.getDate() - 30);
-      start.setHours(0,0,0,0);
-      from = Math.floor(start.getTime() / 1000);
+      // OSTATNIE 30 DNI (ostatnie 30 dni do teraz, po 4 wyniki na dzień)
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(now.getDate() - 29);
+      thirtyDaysAgo.setHours(0,0,0,0);
+      from = Math.floor(thirtyDaysAgo.getTime() / 1000);
+      to = Math.floor(now.getTime() / 1000);
+      window.lastRangeMode = 'last7days'; // użyj tej samej logiki renderowania (po 4 na dzień)
+      fetchSensorData(selectedSensorId, from, to);
+      return;
     } else if (idx === 3) { // USTAW ZAKRES
       let dni = prompt("Podaj liczbę dni (1-30):", "7");
       dni = parseInt(dni);
@@ -248,10 +358,13 @@ document.querySelectorAll('.buttons button').forEach((btn, idx) => {
         return;
       }
       const start = new Date(now);
-      start.setDate(now.getDate() - dni);
+      start.setDate(now.getDate() - (dni - 1));
       start.setHours(0,0,0,0);
       from = Math.floor(start.getTime() / 1000);
+      to = Math.floor(now.getTime() / 1000);
+      window.lastRangeMode = 'range';
+      fetchSensorData(selectedSensorId, from, to);
+      return;
     }
-    fetchSensorData(selectedSensorId, from, to);
   };
 });

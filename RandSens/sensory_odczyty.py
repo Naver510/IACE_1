@@ -21,15 +21,17 @@ def generate_sensor_data():
     return data
 
 def generate_last_month_data():
-    print("Generowanie danych dla poprzedniego miesiąca...")
+    print("Generowanie danych dla poprzedniego miesiąca oraz bieżącego miesiąca...")
 
     now = datetime.now()
     first_day_this_month = datetime(now.year, now.month, 1)
     last_month_last_day = first_day_this_month - timedelta(days=1)
     last_month_first_day = datetime(last_month_last_day.year, last_month_last_day.month, 1)
 
+    # Zakres: od pierwszego dnia poprzedniego miesiąca do dzisiaj (włącznie)
     current = last_month_first_day
-    while current <= last_month_last_day:
+    end_date = now
+    while current <= end_date:
         for hour in range(0, 24):
             dt = current.replace(hour=hour, minute=0, second=0)
             timestamp = int(dt.timestamp())
